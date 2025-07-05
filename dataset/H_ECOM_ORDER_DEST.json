@@ -1,0 +1,20 @@
+{
+	"name": "H_ECOM_ORDER_DEST",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureSqlDatabase1",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "file_to_table"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "h_ecom"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

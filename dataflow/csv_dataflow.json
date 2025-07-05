@@ -1,0 +1,142 @@
+{
+	"name": "csv_dataflow",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "CUST_MSTR",
+						"type": "DatasetReference"
+					},
+					"name": "custcsv"
+				},
+				{
+					"dataset": {
+						"referenceName": "master_child_export",
+						"type": "DatasetReference"
+					},
+					"name": "masterchildcsv"
+				},
+				{
+					"dataset": {
+						"referenceName": "H_ECOM_ORDER",
+						"type": "DatasetReference"
+					},
+					"name": "order"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "CUST_MSTR_DEST",
+						"type": "DatasetReference"
+					},
+					"name": "custsql"
+				},
+				{
+					"dataset": {
+						"referenceName": "master_child_export_dest",
+						"type": "DatasetReference"
+					},
+					"name": "masterchildsql"
+				},
+				{
+					"dataset": {
+						"referenceName": "H_ECOM_ORDER_DEST",
+						"type": "DatasetReference"
+					},
+					"name": "ordersql"
+				}
+			],
+			"transformations": [
+				{
+					"name": "deriveddate",
+					"description": "Add date column"
+				},
+				{
+					"name": "deriveddatekey"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          CustomerID as string,",
+				"          CustomerName as string,",
+				"          Email as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     rowUrlColumn: 'filepath') ~> custcsv",
+				"source(output(",
+				"          MasterID as string,",
+				"          ChildID as string,",
+				"          Relation as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     rowUrlColumn: 'filepath',",
+				"     wildcardPaths:['master_child_export']) ~> masterchildcsv",
+				"source(output(",
+				"          OrderID as string,",
+				"          CustomerID as string,",
+				"          OrderDate as string,",
+				"          TotalAmount as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> order",
+				"custcsv derive(Date = toDate(substring(toString(filepath), length(toString(filepath)) - 11, 8), 'yyyyMMdd')) ~> deriveddate",
+				"masterchildcsv derive(Date = toDate(substring(toString(filepath), length(toString(filepath)) - 11, 8), 'yyyyMMdd'),",
+				"          Datekey = substring(toString(filepath), length(toString(filepath)) - 11, 8)) ~> deriveddatekey",
+				"deriveddate sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     truncate:true,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          CustomerID,",
+				"          CustomerName,",
+				"          Email,",
+				"          Date",
+				"     )) ~> custsql",
+				"deriveddatekey sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     truncate:true,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          MasterID,",
+				"          ChildID,",
+				"          Relation,",
+				"          Date,",
+				"          Datekey",
+				"     )) ~> masterchildsql",
+				"order sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     truncate:true,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> ordersql"
+			]
+		}
+	}
+}

@@ -1,0 +1,20 @@
+{
+	"name": "CUST_MSTR_DEST",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureSqlDatabase1",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "file_to_table"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "cust_csv"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}
